@@ -15,7 +15,6 @@ lr = 1e-3
 epochs = 10
 depth = 3
 
-
 X = np.load('Data/X.npy', allow_pickle = True)
 Y = np.load('Data/Y.npy', allow_pickle = True)
 

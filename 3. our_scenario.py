@@ -16,8 +16,8 @@ import random
 import numpy as np
 import cv2
 
-IM_WIDTH = 640
-IM_HEIGHT = 480
+IM_WIDTH = 200
+IM_HEIGHT = 88
 
 
 
@@ -27,6 +27,10 @@ def process_img(image, training_data, vehicle):
     screen = i2[:, :, :3]
     cv2.imshow("", screen)
     cv2.waitKey(1)
+
+    #surface = pygame.surfarray.make_surface(screen)
+    #display.blit(surface, (0, 0))
+    #pygame.display.update()
 
     our_vehicle_controll = vehicle.get_control()
     throttle = our_vehicle_controll.throttle
@@ -43,6 +47,7 @@ file_index = 0
 file_name = input('Name of train file:')
 file_name_index  = str(file_name) + '-' + str(file_index) + '.npy'
 
+#display = pygame.display.set_mode((200,88))
 
 if os.path.isfile(file_name_index):
     print('File exists, we will overwritte a file!')
