@@ -48,7 +48,7 @@ def nvidia_model(width, height, depth):
     model.add(Dense(100, activation = 'relu'))
     model.add(Dense(50, activation = 'relu'))
     model.add(Dense(10, activation = 'relu'))
-    model.add(Dense(2))
+    model.add(Dense(1))
 
     model.summary()
 

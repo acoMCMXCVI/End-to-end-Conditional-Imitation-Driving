@@ -53,10 +53,10 @@ def process_img(image, vehicle):
 
     data = model.predict(screen.reshape(-1,200,66,3), batch_size=1)
 
-    print(data[0][0])
-    print(data[0][1])
+    print('throw: ' + str(data[0][0]) + '\t steer: ' + str(data[0][1]))
+    #ewprint()
 
-    control = carla.VehicleControl(throttle = float(data[0][0]), steer = float(data[0][1]))
+    control = carla.VehicleControl(throttle = float(0.3), steer = float(data[0][1]))
     vehicle.apply_control(control)
     '''
     our_vehicle_controll = vehicle.get_control()
@@ -85,7 +85,7 @@ try:
     our_vehicle_bp = blueprint_library.filter('model3')[0]
 
 
-    our_vehicle_spawn_point = world.get_map().get_spawn_points()[15]
+    our_vehicle_spawn_point = world.get_map().get_spawn_points()[5]
 
     our_vehicle = world.spawn_actor(our_vehicle_bp, our_vehicle_spawn_point)
     #our_vehicle.set_autopilot(True)  # if you just wanted some NPCs to drive.
