@@ -22,20 +22,20 @@ import numpy as np
 import cv2
 
 
-IM_WIDTH = 640
-IM_HEIGHT = 480
+IM_WIDTH = 200
+IM_HEIGHT = 150
 
 lr = 1e-3
-epochs = 10
+epochs = 7
 width = 200
 height = 66
 
 
 
-model_name = 'Models/carla-{}-{}-{}-epochs.h5'.format(lr, 'nvidiaETE', epochs)
+model_name = 'Models/carla-{}-{}-{}-epochs-batches.h5'.format(lr, 'nvidiaETE', epochs)
 
 model = nvidia_model(width, height, 3)
-model.compile(optimizer = Adam(lr=lr), loss='mse')
+#model.compile(optimizer = Adam(lr=lr), loss='mse')
 model = load_model(model_name)
 model._make_predict_function()
 
@@ -43,20 +43,18 @@ model._make_predict_function()
 def process_img(image, vehicle):
     i = np.array(image.raw_data)
     i2 = i.reshape((IM_HEIGHT, IM_WIDTH, 4))
-    screen = i2[:, :, :3]
-
-    screen = cv2.resize(screen, (width,height))
+    screen = i2[-66:, :, :3]
 
     cv2.imshow("", screen)
     cv2.waitKey(1)
 
 
-    data = model.predict(screen.reshape(-1,200,66,3), batch_size=1)
+    data = model.predict(screen.reshape(-1,66,200,3), batch_size=1)
 
-    print('throw: ' + str(data[0][0]) + '\t steer: ' + str(data[0][1]))
+    print('steer: ' + str(data))
     #ewprint()
 
-    control = carla.VehicleControl(throttle = float(0.3), steer = float(data[0][1]))
+    control = carla.VehicleControl(throttle = float(0.5), steer = float(data))
     vehicle.apply_control(control)
     '''
     our_vehicle_controll = vehicle.get_control()
@@ -85,7 +83,7 @@ try:
     our_vehicle_bp = blueprint_library.filter('model3')[0]
 
 
-    our_vehicle_spawn_point = world.get_map().get_spawn_points()[5]
+    our_vehicle_spawn_point = world.get_map().get_spawn_points()[15]
 
     our_vehicle = world.spawn_actor(our_vehicle_bp, our_vehicle_spawn_point)
     #our_vehicle.set_autopilot(True)  # if you just wanted some NPCs to drive.

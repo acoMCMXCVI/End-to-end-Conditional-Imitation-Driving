@@ -23,7 +23,8 @@ rights = []
 forwards = []
 
 batch_index = 0
-batch_name  = 'Data/Final/batch_' + str(batch_index) + '.npy'
+batch_X_name  = 'Data/Final/X_batch_' + str(batch_index) + '.npy'
+batch_Y_name  = 'Data/Final/Y_batch_' + str(batch_index) + '.npy'
 
 data_files = 0
 
@@ -101,13 +102,22 @@ for file_name in file_names:
                 for k in range(0, num_of_batches):
 
                     batch = final_data[k * 256 : (k + 1) * 256 ]
-                    np.save(batch_name, batch)
+                    X = []
+                    Y = []
 
-                    print(str(batch_name) + 'is saved!')
+                    for i in batch:
+                        X.append(i[0])
+                        Y.append(i[1])
+
+                    np.save(batch_X_name, X)
+                    np.save(batch_Y_name, Y)
+
+                    print(str(batch_X_name) + 'is saved!')
 
 
                     batch_index += 1
-                    batch_name  = 'Data/Final/batch_' + str(batch_index) + '.npy'
+                    batch_X_name  = 'Data/Final/X_batch_' + str(batch_index) + '.npy'
+                    batch_Y_name  = 'Data/Final/Y_batch_' + str(batch_index) + '.npy'
 
                 data_files += len(final_data)
                 final_data = []

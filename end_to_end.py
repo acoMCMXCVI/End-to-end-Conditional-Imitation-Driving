@@ -21,7 +21,7 @@ def nvidia_model(width, height, depth):
     model = Sequential()
 
 	# Normalizing data in range of -1 to 1 and zero-centering data
-    model.add(Lambda(lambda x: x / 127.5-1.0, input_shape=[width,height,depth]))
+    model.add(Lambda(lambda x: x / 127.5-1.0, input_shape=[height,width,depth]))
 
 
     # Layer 1: 5x5 Conv + ELU + 2x2 MaxPool
