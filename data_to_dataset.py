@@ -1,19 +1,17 @@
 import numpy as np
-import pandas as pd
 from random import shuffle
-import matplotlib.pyplot as plt
-import matplotlib.image as npimg
 import cv2
 import os
 import sys
 
 
+h_control = np.load('Data/CONTROL.npy', allow_pickle=True)
 
 
-#file_name = input('Name of train file:')
 file_names = ['x', 'x1']
 
-X = []
+img = []
+control = []
 Y = []
 
 collect_set = []
@@ -23,10 +21,12 @@ rights = []
 forwards = []
 
 batch_index = 0
-batch_X_name  = 'Data/Final/X_batch_' + str(batch_index) + '.npy'
+batch_X_img_name  = 'Data/Final/X_img_batch_' + str(batch_index) + '.npy'
+batch_X_control_name  = 'Data/Final/X_control_batch_' + str(batch_index) + '.npy'
 batch_Y_name  = 'Data/Final/Y_batch_' + str(batch_index) + '.npy'
 
 data_files = 0
+batch_num = 0
 
 for file_name in file_names:
 
@@ -42,22 +42,28 @@ for file_name in file_names:
 
             #print('File ' + str(file_name_index) + ' exists, loading data!')
             training_data = np.load(file_name_index, allow_pickle=True)
+            h_control_batch = h_control[0][batch_num * 257 : (batch_num + 1) * 257]
+            batch_num += 1
+
+            #print(training_data.shape)
+            if len(training_data) > 257:
+                training_data = training_data[:257][:]
 
             for count, data in enumerate(training_data):
-
+                #print('count:{}'.format(count))
                 if data[1][1] >= 0.02:
                     image   =   data[0][-66:,:,:]
                     control =   data[1][1]
-                    rights.append([image, control])
+                    rights.append([image, h_control_batch[count], control])
                     #print('idemo')
                 elif data[1][1] <= -0.02:
                     image   =   data[0][-66:,:,:]
                     control =   data[1][1]
-                    lefts.append([image, control])
+                    lefts.append([image, h_control_batch[count], control])
                 else:
                     image   =   data[0][-66:,:,:]
                     control =   data[1][1]
-                    forwards.append([image, control])
+                    forwards.append([image, h_control_batch[count], control])
 
                 if (len(rights) + len(lefts) + len(forwards)) % 2500 == 0:
                     print((len(rights) + len(lefts) + len(forwards)))
@@ -102,21 +108,25 @@ for file_name in file_names:
                 for k in range(0, num_of_batches):
 
                     batch = final_data[k * 256 : (k + 1) * 256 ]
-                    X = []
+                    img = []
+                    control = []
                     Y = []
 
                     for i in batch:
-                        X.append(i[0])
-                        Y.append(i[1])
+                        img.append(i[0])
+                        control.append(i[1])
+                        Y.append(i[2])
 
-                    np.save(batch_X_name, X)
+                    np.save(batch_X_img_name, img)
+                    np.save(batch_X_control_name, control)
                     np.save(batch_Y_name, Y)
 
-                    print(str(batch_X_name) + 'is saved!')
+                    print(str(batch_X_img_name) + 'is saved!')
 
 
                     batch_index += 1
-                    batch_X_name  = 'Data/Final/X_batch_' + str(batch_index) + '.npy'
+                    batch_X_img_name  = 'Data/Final/X_img_batch_' + str(batch_index) + '.npy'
+                    batch_X_control_name  = 'Data/Final/X_control_batch_' + str(batch_index) + '.npy'
                     batch_Y_name  = 'Data/Final/Y_batch_' + str(batch_index) + '.npy'
 
                 data_files += len(final_data)
@@ -139,22 +149,6 @@ for file_name in file_names:
             print('File dont exist!')
             done = True
 
+
+        #print(batch_num)
         file_index += 1
-
-'''
-shuffle(forwards)
-shuffle(lefts)
-shuffle(rights)
-
-forwards = forwards[:len(lefts)][:len(rights)]
-lefts = lefts[:len(forwards)]
-rights = rights[:len(forwards)]
-
-final_data = forwards + lefts + rights
-shuffle(final_data)
-
-print('Saving X...')
-np.save('rights.npy', rights)
-#print('Saving Y...')
-#np.save('Y.npy',np.array(Y))
-'''

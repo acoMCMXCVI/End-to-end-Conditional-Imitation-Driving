@@ -2,8 +2,9 @@ import glob
 import os
 import sys
 import time
+import keyboard
 
-from end_to_end import nvidia_model
+from functional_control_end_to_end_keras_model import nvidia_model
 from keras.optimizers import Adam
 from keras.models import load_model
 
@@ -26,21 +27,24 @@ IM_WIDTH = 200
 IM_HEIGHT = 150
 
 lr = 1e-3
-epochs = 7
+epochs = 12
 width = 200
 height = 66
 
+h_control = 0
 
 
 model_name = 'Models/carla-{}-{}-{}-epochs-batches.h5'.format(lr, 'nvidiaETE', epochs)
 
-model = nvidia_model(width, height, 3)
+model = nvidia_model(width, height, 3, 4)
 #model.compile(optimizer = Adam(lr=lr), loss='mse')
 model = load_model(model_name)
+# ovo u sustini treba da sredi neki problem koji bi se desio kada prvi put pozovem predict
+# kao inicijalizacija predicta
 model._make_predict_function()
 
 
-def process_img(image, vehicle):
+def process_img(image, vehicle, h_control):
     i = np.array(image.raw_data)
     i2 = i.reshape((IM_HEIGHT, IM_WIDTH, 4))
     screen = i2[-66:, :, :3]
@@ -49,9 +53,13 @@ def process_img(image, vehicle):
     cv2.waitKey(1)
 
 
-    data = model.predict(screen.reshape(-1,66,200,3), batch_size=1)
+    one_hot = np.zeros((4))
+    one_hot[h_control] = 1
 
-    print('steer: ' + str(data))
+    #print(one_hot.reshape(-1,4))
+    data = model.predict([screen.reshape(-1,66,200,3), one_hot.astype(int).reshape(-1,4)], batch_size = 1)
+
+    #print('steer: ' + str(data))
     #ewprint()
 
     control = carla.VehicleControl(throttle = float(0.5), steer = float(data))
@@ -65,9 +73,16 @@ def process_img(image, vehicle):
 actor_list = []
 vehicles_list = []
 
+town_name = input('Name of town: ')
+
 try:
     client = carla.Client('localhost', 2000)
-    client.set_timeout(2.0)
+    client.set_timeout(10.0)
+
+    if town_name != 'Town01':
+        world = client.load_world(town_name)
+
+
 
     world = client.get_world()
     weather = carla.WeatherParameters(
@@ -83,7 +98,7 @@ try:
     our_vehicle_bp = blueprint_library.filter('model3')[0]
 
 
-    our_vehicle_spawn_point = world.get_map().get_spawn_points()[15]
+    our_vehicle_spawn_point = world.get_map().get_spawn_points()[165]
 
     our_vehicle = world.spawn_actor(our_vehicle_bp, our_vehicle_spawn_point)
     #our_vehicle.set_autopilot(True)  # if you just wanted some NPCs to drive.
@@ -111,11 +126,24 @@ try:
     sensor = world.spawn_actor(blueprint, spawn_point, attach_to=our_vehicle)
     actor_list.append(sensor)
 
-    sensor.listen(lambda data: process_img(data, our_vehicle))
+    sensor.listen(lambda data: process_img(data, our_vehicle, h_control))
 
     print('Krecemo')
     while True:
         world.tick()
+
+        if keyboard.is_pressed('left'):
+            h_control = 1
+            print('At the next intersection we go left.')
+        elif keyboard.is_pressed('up'):
+            h_control = 2
+            print('At the next intersection we go straight.')
+        elif keyboard.is_pressed('right'):
+            h_control = 3
+            print('At the next intersection we go right.')
+        elif keyboard.is_pressed('down'):
+            h_control = 0
+            print('At the next intersection we go wherever we want.')
 
 
 

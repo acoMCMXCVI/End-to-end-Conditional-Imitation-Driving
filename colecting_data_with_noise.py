@@ -23,19 +23,6 @@ IM_WIDTH = 200
 IM_HEIGHT = 150
 
 
-def add_noise(vehicle):
-
-    if np.absolute(vehicle.get_control().steer) < 0.1:
-
-        vehicle.set_autopilot(False)
-
-        control = carla.VehicleControl(throttle = 0, steer = 0.3)
-        vehicle.apply_control(control)
-
-        print('test1')
-        time.sleep(3)
-        print('test2')
-        vehicle.set_autopilot(True)
 
 def add_noise_teleport(vehicle):
 

@@ -1,0 +1,7 @@
+colecting_data_with_noise:  prikupljanje podataka sa noisem
+show_data:                  pregled prikupljenih podataka
+add_high_control_data:      dodaje high kontrolu podacima
+data_to_datasets:           mesa podatke i deli ih u batchove za trening
+end_to_end:                 poseduje KERAS model
+train_model_batches:        trenita mrezu koristeci batcheve
+test_model_in_CARLA:        testira model u CARLI
