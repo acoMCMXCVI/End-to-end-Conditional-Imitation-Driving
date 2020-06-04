@@ -1,5 +1,15 @@
 # Project stuff.
 Data/
 Log/
-Models/
+Models2/
 __pycache__/
+
+
+-----balance_data_ne koristi.py
+check_data_control_and_aug.py
+-----colecting_data_without_noise.py
+end_to_end.py
+functional_end_to_end_keras_model.py
+postupk.txt
+-----train_model.py
+train_model_batches.py

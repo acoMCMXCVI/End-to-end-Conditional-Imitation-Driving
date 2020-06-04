@@ -4,11 +4,13 @@ import cv2
 import os
 import sys
 
+from util import add_all_sesion_names
 
-h_control = np.load('Data/CONTROL.npy', allow_pickle=True)
+h_control = np.load('Data/control.npy', allow_pickle=True)
 
 
-file_names = ['x', 'x1']
+# adding all sesion to list
+file_names = add_all_sesion_names()
 
 img = []
 control = []
@@ -20,6 +22,8 @@ lefts = []
 rights = []
 forwards = []
 
+
+# paths for final dataset batches
 batch_index = 0
 batch_X_img_name  = 'Data/Final/X_img_batch_' + str(batch_index) + '.npy'
 batch_X_control_name  = 'Data/Final/X_control_batch_' + str(batch_index) + '.npy'
@@ -28,11 +32,13 @@ batch_Y_name  = 'Data/Final/Y_batch_' + str(batch_index) + '.npy'
 data_files = 0
 batch_num = 0
 
+# loop true sessions
 for file_name in file_names:
 
     print(file_name)
     file_index = 0
 
+    # loop true bathes of sessions
     done = False
     while not done:
 
@@ -42,20 +48,16 @@ for file_name in file_names:
 
             #print('File ' + str(file_name_index) + ' exists, loading data!')
             training_data = np.load(file_name_index, allow_pickle=True)
-            h_control_batch = h_control[0][batch_num * 257 : (batch_num + 1) * 257]
+            h_control_batch = h_control[0][batch_num * 256 : (batch_num + 1) * 256]
             batch_num += 1
 
-            #print(training_data.shape)
-            if len(training_data) > 257:
-                training_data = training_data[:257][:]
-
+            # loop for division data into rights, lefts and forwards
             for count, data in enumerate(training_data):
                 #print('count:{}'.format(count))
                 if data[1][1] >= 0.02:
                     image   =   data[0][-66:,:,:]
                     control =   data[1][1]
                     rights.append([image, h_control_batch[count], control])
-                    #print('idemo')
                 elif data[1][1] <= -0.02:
                     image   =   data[0][-66:,:,:]
                     control =   data[1][1]
@@ -67,16 +69,9 @@ for file_name in file_names:
 
                 if (len(rights) + len(lefts) + len(forwards)) % 2500 == 0:
                     print((len(rights) + len(lefts) + len(forwards)))
-                #image   =   data[0][-66:,:,:]
-                #control =   data[1]
-
-                #collect_set.append ([image, control])
 
 
-                #cv2.imshow('window', image)
-                #cv2.waitKey(2)
-
-
+            # if we load more then 10000 sigle samples we need to save it and start again becouse memory issue
             if (len(rights) + len(lefts) + len(forwards)) > 10000:
                 print('File ' + str(file_name_index) + ' exists, loading data!')
 
@@ -89,11 +84,13 @@ for file_name in file_names:
 
                 print('Lefts: ' + str(len(lefts)) + '\tForwards: ' + str(len(forwards)) + '\tRights: ' + str(len(rights)))
 
+                # make rights, lefts and forwards to be same lengt becouse data distributions
                 forwards = forwards[:len(lefts)][:len(rights)]
                 lefts = lefts[:len(forwards)]
                 rights = rights[:len(forwards)]
                 print('Slice done!')
 
+                # mix all rights, lefts and forwards samples
                 final_data = forwards + lefts + rights
                 shuffle(final_data)
 
@@ -102,6 +99,7 @@ for file_name in file_names:
                 rights = []
                 forwards = []
 
+                # saving 10000 samples to batches of 256 samples
                 print ('Saving: ' + str(len(final_data)) + 'files!')
 
                 num_of_batches = int(len(final_data) / 256)
@@ -142,7 +140,7 @@ for file_name in file_names:
             #lefts: 52858    forwards: 178756        rights: 54176 => 0.05
             #lefts: 78932    forwards: 122780        rights: 84078 => 0.02
             #lefts: 79094    forwards: 122783        rights: 83915
-            # bilo 194k
+
 
 
         else:

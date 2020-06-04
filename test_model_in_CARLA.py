@@ -4,7 +4,7 @@ import sys
 import time
 import keyboard
 
-from functional_control_end_to_end_keras_model import nvidia_model
+from functional_conditional_end_to_end_keras_model import nvidia_model
 from keras.optimizers import Adam
 from keras.models import load_model
 
@@ -26,15 +26,16 @@ import cv2
 IM_WIDTH = 200
 IM_HEIGHT = 150
 
-lr = 1e-3
-epochs = 12
+lr = 1e-4
+epochs = 4
 width = 200
 height = 66
 
 h_control = 0
 
-
-model_name = 'Models/carla-{}-{}-{}-epochs-batches.h5'.format(lr, 'nvidiaETE', epochs)
+#carla-0.0001-nvidiaETE-4-epochs-batches-aug-2nd.h5
+#carla-0.001-nvidiaETE-12-epochs-batches.h5
+model_name = 'Models/carla-0.001-nvidiaETE-10-epochs-batches.h5'.format(lr, 'nvidiaETE', epochs)
 
 model = nvidia_model(width, height, 3, 4)
 #model.compile(optimizer = Adam(lr=lr), loss='mse')
@@ -57,6 +58,7 @@ def process_img(image, vehicle, h_control):
     one_hot[h_control] = 1
 
     #print(one_hot.reshape(-1,4))
+
     data = model.predict([screen.reshape(-1,66,200,3), one_hot.astype(int).reshape(-1,4)], batch_size = 1)
 
     #print('steer: ' + str(data))
@@ -79,8 +81,9 @@ try:
     client = carla.Client('localhost', 2000)
     client.set_timeout(10.0)
 
-    if town_name != 'Town01':
+    if town_name != 'q':
         world = client.load_world(town_name)
+
 
 
 
@@ -88,8 +91,14 @@ try:
     weather = carla.WeatherParameters(
         cloudiness=10.0,
         precipitation=10.0,
-        sun_altitude_angle=70.0)
+        sun_altitude_angle=70.0,
+        precipitation_deposits=10)
     world.set_weather(weather)
+
+    ''' cloudiness=80.0,
+        precipitation=80.0,
+        sun_altitude_angle=30.0,
+        precipitation_deposits=80)  '''
 
     blueprint_library = world.get_blueprint_library()
     blueprints = world.get_blueprint_library().filter('vehicle')
@@ -98,7 +107,7 @@ try:
     our_vehicle_bp = blueprint_library.filter('model3')[0]
 
 
-    our_vehicle_spawn_point = world.get_map().get_spawn_points()[165]
+    our_vehicle_spawn_point = world.get_map().get_spawn_points()[80]
 
     our_vehicle = world.spawn_actor(our_vehicle_bp, our_vehicle_spawn_point)
     #our_vehicle.set_autopilot(True)  # if you just wanted some NPCs to drive.

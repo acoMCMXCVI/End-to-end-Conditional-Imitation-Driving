@@ -12,10 +12,6 @@ from keras.layers import Lambda, Dropout, ELU
 from keras.layers import Conv2D, Flatten, Dense, Input
 
 
-### Keras model architecture definition
-# If under-fitting, more conv layers or increase epochs
-# If over-fitting, less conv or dense layers, use dropout/BN for regularization, collect more data
-
 
 def nvidia_model(width, height, depth):
 
