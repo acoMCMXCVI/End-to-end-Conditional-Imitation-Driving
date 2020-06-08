@@ -4,20 +4,20 @@ Autonomous driving research (Part I)
 ![](Pictures/base.jpg)
 
 
-Cilj projekta je bio kreirati sitem koji omogućava prikupljanje podataka I pripremu _dataset-a_, kao i treniranje neuronske mreže za _end-to-end imitation learning_ za autonomnu voznju, u svrsi istraživanja koncepata autonomne vožnje.
+The purpose of this project is to create system that is able to collect data and prepare dataset, just as training neural network for end-to-end imitation learning for autonomous driving, in purpose of research of the autonomous driving concepts. 
 
-Sistem je kreiran za _Carla_ simulator.
+The system is created for Carla simulator. 
 
 
 ## Video
 
-Video na linku ispod prikazuje kratak demo dobijenih rezultata, kao I kratak prikaz značaja augmentacije podataka, te poređenje dva modela u specifičnim situacijama, jednog obučenog na _raw_ podacima, I jednog na kom je primenjena augmentacija. 
+The link of the video shows short demo of results, brief overview of purpose of data augmentation, and comparison of two models in specific situations: one trained on raw data, and second trained on data on which augmentation was applied. 
 
 https://www.youtube.com/watch?v=LoXPs6NShLI
 
-## Uputstvo
+## Usage
 
-### Bitlioteke
+### Packages
 
 ```
 Python: 3.7.4
@@ -28,41 +28,40 @@ Imgaug: 0.4.0
 OpenCV: 3.4.7
 ```
 
-## Koraci
+## Steps
 
-Ceo proces od prikupljanja podataka do treniranja mreže je podeljen u više koraka: 
+The whole process of collecting data which ends with training neural network is divided in several steps: 
 
-1. __Prikupljanje podataka ```colecting_data.py```:__  
-Prikupljanje podataka se sastoji iz preuzimanja slike sa kamere na automobilu koja se potom sa odgovarajućim uglom upravljanja smešta u listu. Prikupljeni podaci se čuvaju u _batch-evima_ od po 256 podatka x∈{_image, steering angle_}. Prilikom prikupljanja podataka, _Carla_ autopilot upravlja automobilom. Podatke je moguće prikupljati tokom više sesija.
+1. __Collecting data ```colecting_data.py```:__  
+Collecting data is consisted of taking a picture from an automobile’s camera with appropriate steering angle which is put on the list. Collected data is kept in batches with 256 samples. During collecting data, Carla autopilot controls an automobile. The data is possible to collect during multiple sessions.
 
-2. __Pregled prikupljenih podataka ```show_colected_data.py```:__  
-Pregled _raw_ podataka kroz sve _batch-eve_ jedne sesije.
+2. __Overview of collected data ```show_colected_data.py```:__  
+Overview of raw data through all batches of one session. 
 
-3. __Pridodavanje _high-level_ kontrole podacima ```add_high_level_control.py```:__  
-Nakon što prikupimo podatke, potrebno im je pridodati informaciju o _high-level_ kontroli, odnosno pridodati informaciju koja je navela "auto" na odgovarajuću akciju. Na početku je bitno definisati za koje se sve sesije želi proci kroz ovaj postupak. _High-level_ kontrola se dodaje tako što se na dugme ‘O’ na tastaturi bira početni frejm od koga važi određena _high-level_ kontrola, dok se na dugme ‘P’ na tastaturi bira krajnji frejm do kojeg je ta kontrola delovala, nakon čega se upisuje određena kontrola. Nakon prolaska kroz sve _batch-eve_ svih sesija, program čuva fajl sa kontrolama za sve definisane sesije.
+3. __Adding high-level control to data ```add_high_level_control.py```:__  
+After collecting data, it is necessary to add the high-level control information, that is to say, the adding of the information which led the automobile to corresponding action. At the beginning we are choosing the sessions which we want to go through with adding high-level control. High-level control is added by selecting the start frame on the ‘O’ button on the keyboard from which a corresponding high-level control is valid. The ‘P’ button on the keyboard selects the end frame up to which the control was valid, after which we select specific control (information). After going through all batches of all sessions, the program saves the file with all high-level controls of all sessions. 
 
-4. __Kreiranje dataseta za obuku```data_to_dataset.py```:__  
-Nakon definisanja _high-level_ kontrole za sve podatke koje smo hteli da iskoristimo za obučavanje, potrebno je kreirati _dataset_ za obuku, koji se treba sastojati iz odgovarajuće distribucije podataka. Takođe se podaci mešaju, te se kreiraju _batch-evi_ od 256 podatka za obučavanje u formi X^_j_={_images, high-level control_}, Y^_j_={_steering angle_}, gde je _j_ označava broj _batch-eva_. 
-
-
-5. __Arhitektura modela ```functional_conditional_end_to_end_keras_model.py```:__  
-Osnova arhitekture koja je korištena za model je predstavljena u _End to End Learning for Self-Driving Cars (https://arxiv.org/pdf/1604.07316.pdf)_, uz određene izmene koje se tiču još jednog ulaza koji se odnosi na _high_level_ kontrolu.
+4. __Creating dataset for training ```data_to_dataset.py```:__  
+After defining high-level controls for all data which we want to use foe training, it is required to create dataset for training, which should consist of suitable distribution of data. The data also mixes, and batches are created of 256 samples for training in the form X^j={images, high-level control}, Y^j={steering angle}, where j defines number of batches.
 
 
-6. __Obuka modela ```train_model_batches_control.py```:__  
-Treniranje modela se vrši u _batch-evima_ dobijenim iz prethodnog koraka. Ovaj pristup je izabran kako bi se mogla lako I brzo vršiti augmentacija na podacima, I kako bi se rešio problem sa memorijom prilikom otvaranja velikih fajlova.
-
-7. __Testiranje modela ```test_model_in_CARLA.py```:__  
-Prilikom testiranja modela bitno je odabrati model koji se želi testirati, grad u _Carla_ simulatoru u kom se želi testirati model. Komande za davanje _high-level_ kontrole su strelice na tastaturi, koje određuju da auto treba skrenuti levo ukoliko se pritisne leva strelica, pravo ukoliko se pritisne strelica gore, desno ukoliko se pritisne strelica desno, te kuda kog ga model vodi, ukoliko se pritisne strelica dole. 
+5. __Architecture of model ```functional_conditional_end_to_end_keras_model.py```:__  
+The base of the architecture which was used is shown in End-to-End Learning for Self-Driving Cars (https://arxiv.org/pdf/1604.07316.pdf), with certain changes which have to do with one more input which have to do with high-level control. 
 
 
-## Modeli
+6. __Model training ```train_model_batches_control.py```:__  
+Model training is done in batches gained from last step. This method is chosen so that data augmentation is done in easy and fast way, and to solve memory issues. 
 
-Uz kod su dostupna i dva modela, jedan obučen na _raw_ podacima, I jedan na kom je primenjena augmentacija prilikom obuke. 
+7. __Model testing ```test_model_in_CARLA.py```:__  
+In the process of the model testing is necessary to choose model that we want to test, and city in Carla simulator in which we want to test model. Arrows on the keyboard are the commands for giving high-level control information. 
 
 
-Oba modela su obučena kroz 10 epoha, na relativno malom setu podataka od približno 190000 frejmova podeljenom u 745 _batch-eva_. Za optimizator je korišten _Adam_ sa _learning rate-om_ od 1e-4. 
+## Models
 
-__Bitno je napomenuti da su _raw_ podaci prikupljani u sunčanom okruženju, bez oblaka i kiše, te da se mogućnosti augmentacije vrlo očituju u promenjenom okruženju sa kišom i oblacima, gde se model obučen na _raw_ podacima ne snalazi, gde se model obučen na istim ali augmentovanim podacima snalazi bolje.__
+With code there are two models: one trained on the raw data, and the other trained on the data on which data augmentation was applied. 
+
+Both models are trained through 10 epochs, on relatively small dataset with approximately 190000 frames divided in 745 batches. For optimizations algorithm Adam with learning rate of 1e-4 was used. 
+
+__It is important to underline that raw data is collected in sunny environment, without clouds and rain. The data augmentation is very noticeable in changed environment with clouds and rain, where the model trained on the raw data does not manage well, and where model trained on the same data, but with augmentation manage is better.__
 
 ![](Pictures/aug.gif)
